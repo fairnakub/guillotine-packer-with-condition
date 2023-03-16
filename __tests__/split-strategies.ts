@@ -1,4 +1,5 @@
 import { GetSplitImplementation, SplitStrategy } from '../src/split-strategies'
+import { Item } from '../src/types'
 
 const rect = {
   width: 100,
@@ -16,7 +17,7 @@ const item = {
 
 test('long axis split', () => {
   const sorter = GetSplitImplementation(SplitStrategy.LongAxisSplit, 0)
-  const selected = sorter.split(rect, item)
+  const selected = sorter.split(rect, (item as any) as Item)
 
   expect(selected).toMatchInlineSnapshot(`
 Array [
@@ -44,7 +45,7 @@ Array [
 
 test('short axis split', () => {
   const sorter = GetSplitImplementation(SplitStrategy.ShortAxisSplit, 0)
-  const selected = sorter.split(rect, item)
+  const selected = sorter.split(rect, (item as any) as Item)
 
   expect(selected).toMatchInlineSnapshot(`
 Array [
@@ -72,7 +73,7 @@ Array [
 
 test('short axis leftover split', () => {
   const sorter = GetSplitImplementation(SplitStrategy.ShortLeftoverAxisSplit, 0)
-  const selected = sorter.split(rect, item)
+  const selected = sorter.split(rect, (item as any) as Item)
 
   expect(selected).toMatchInlineSnapshot(`
 Array [
@@ -100,7 +101,7 @@ Array [
 
 test('long axis leftover split', () => {
   const sorter = GetSplitImplementation(SplitStrategy.LongLeftoverAxisSplit, 0)
-  const selected = sorter.split(rect, item)
+  const selected = sorter.split(rect, (item as any) as Item)
 
   expect(selected).toMatchInlineSnapshot(`
 Array [

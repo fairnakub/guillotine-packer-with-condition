@@ -1,4 +1,5 @@
 import { GetSelectionImplementation, SelectionStrategy } from '../src/selection-strategies'
+import { Item } from '../src/types'
 
 const item1 = {
   width: 10,
@@ -34,7 +35,7 @@ const rectangles = [
 
 test('best area fit', () => {
   const sorter = GetSelectionImplementation(SelectionStrategy.BEST_AREA_FIT)
-  const selected = sorter.select(rectangles, item1)
+  const selected = sorter.select(rectangles, (item1 as any) as Item)
 
   expect(selected).toMatchInlineSnapshot(`
 Object {
@@ -50,7 +51,7 @@ Object {
 
 test('best long side fit', () => {
   const sorter = GetSelectionImplementation(SelectionStrategy.BEST_LONG_SIDE_FIT)
-  const selected = sorter.select(rectangles, item1)
+  const selected = sorter.select(rectangles, (item1 as any) as Item)
 
   expect(selected).toMatchInlineSnapshot(`
 Object {
@@ -92,7 +93,7 @@ test('best short side fit', () => {
     }
   ]
   const sorter = GetSelectionImplementation(SelectionStrategy.BEST_SHORT_SIDE_FIT)
-  const selected = sorter.select(rectangles, item1)
+  const selected = sorter.select(rectangles, (item1 as any) as Item)
 
   expect(selected).toMatchInlineSnapshot(`
 Object {
