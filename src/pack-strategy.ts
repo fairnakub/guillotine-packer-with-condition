@@ -108,7 +108,7 @@ export function PackStrategy({
     if (itemDetail) {
       packedItems.forEach((e, index) => {
         console.log('e.count1: ', e.count)
-        if (e.name === item.name && e.bin == binId) {
+        if (e.name === item.name && e.bin === binId) {
           // CHECK IF THE loadCount OF THE item HAS BEEN EXCEEDED THE maxCount
           let count = e.count || 0
           if (count + 1 <= (itemDetail?.maxCount || 0)) {
