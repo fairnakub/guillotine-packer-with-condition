@@ -9,7 +9,18 @@ export type Rectangle = {
 }
 
 export interface Item {
+  name: string
+  count: number
+  [others: string]: any
+}
+export interface OtherItemDetail {
+  [others: string]: any
+}
+
+export interface ItemConfig {
+  name: string
   width: number
   height: number
-  [others: string]: any
+  weight: number
+  maxCount: number
 }

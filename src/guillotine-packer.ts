@@ -3,29 +3,31 @@ import { SelectionStrategy } from './selection-strategies'
 import { SortStrategy, SortDirection } from './sort-strategies'
 import createDebug from 'debug'
 const debug = createDebug('guillotine-packer')
-import { PackedItem, PackStrategy } from './pack-strategy'
-import { Item } from './types'
+import { Bin, PackedItem, PackStrategy } from './pack-strategy'
+import { Item, ItemConfig } from './types'
 import { cartesian } from './util'
 
-type PackerInputs = { binHeight: number; binWidth: number; items: Item[] }
+type PackerInputs = { bin: Bin; items: Item[]; itemConfig: ItemConfig[] }
 type PackerConfig = {
   selectionStrategy?: SelectionStrategy
   splitStrategy?: SplitStrategy
   sortStrategy?: SortStrategy
   kerfSize?: number
   allowRotation?: boolean
+  allowWeightLimitSplit?: boolean // Take into account weight of items when calculating
 }
 
 type PackerResult = PackedItem[][] | null
 
 function Packer(
-  { binHeight, binWidth, items }: PackerInputs,
+  { bin, items, itemConfig }: PackerInputs,
   {
     selectionStrategy,
     splitStrategy,
     sortStrategy,
     kerfSize = 0,
-    allowRotation = true
+    allowRotation = true,
+    allowWeightLimitSplit = false
   }: PackerConfig = {}
 ) {
   function enumToArray<T>(enumVariable: T) {
@@ -48,15 +50,16 @@ function Packer(
   return allStrategies
     .map(([selectionStrategy, splitStrategy, sortStrategy, sortOrder]) =>
       PackStrategy({
-        binWidth,
-        binHeight,
+        bin,
         items,
+        itemConfig,
         splitStrategy,
         selectionStrategy,
         sortStrategy,
         sortOrder,
         kerfSize,
-        allowRotation
+        allowRotation,
+        allowWeightLimitSplit
       })
     )
     .reduce((bestCompressed, packResult) => {

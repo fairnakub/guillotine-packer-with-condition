@@ -66,6 +66,11 @@ class Ratio extends Sorter {
     return a.width / a.height < b.width / b.height ? -1 : 1
   }
 }
+class Weight extends Sorter {
+  comparer(a: Item, b: Item) {
+    return (a.weight || 0) < (b.weight || 0) ? -1 : 1
+  }
+}
 
 export enum SortStrategy {
   Area,
@@ -73,7 +78,8 @@ export enum SortStrategy {
   LongSide,
   Perimeter,
   Differences,
-  Ratio
+  Ratio,
+  Weight
 }
 
 export enum SortDirection {
@@ -102,6 +108,8 @@ export function GetSortImplementation(strategy: SortStrategy, direction: SortDir
     case SortStrategy.ShortSide:
       impl = ShortSide
       break
+    case SortStrategy.Weight:
+      impl = Weight
   }
   return new impl(direction)
 }

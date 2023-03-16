@@ -1,45 +1,57 @@
 import debugLib from 'debug'
 const debug = debugLib('guillotine-packer:pack-strategy')
-import { Rectangle, Item } from './types'
+import { Rectangle, Item, ItemConfig, OtherItemDetail } from './types'
 import { SelectionStrategy, GetSelectionImplementation } from './selection-strategies'
 import { SortDirection, SortStrategy, GetSortImplementation } from './sort-strategies'
 import { SplitStrategy, GetSplitImplementation } from './split-strategies'
 
-export type PackStrategyOptions = {
+export type Bin = {
   binHeight: number
   binWidth: number
+  binWeightLimit?: number
+}
+
+export type PackStrategyOptions = {
+  bin: Bin
   items: Item[]
+  itemConfig: ItemConfig[]
   selectionStrategy: SelectionStrategy
   splitStrategy: SplitStrategy
   sortStrategy: SortStrategy
   sortOrder: SortDirection
   kerfSize: number
   allowRotation: boolean
+  allowWeightLimitSplit: boolean
 }
 
 export type PackedItem = {
-  item: any
+  otherDetail: OtherItemDetail
+  name: string
   width: number
   height: number
+  weight: number
+  count: number
   x: number
   y: number
   bin: number
 }
 
 export function PackStrategy({
-  binHeight,
-  binWidth,
+  bin,
   items,
+  itemConfig,
   selectionStrategy,
   splitStrategy,
   sortStrategy,
   sortOrder,
   kerfSize,
-  allowRotation
+  allowRotation,
+  allowWeightLimitSplit
 }: PackStrategyOptions) {
   debug(
     `Executing! split strategy: ${splitStrategy}, selection strategy: ${selectionStrategy}, sortStrategy: ${sortStrategy}, sortOrder: ${sortOrder}`
   )
+  const { binWidth, binHeight, binWeightLimit } = bin
   let binCount = 0
   const freeRectangles: Rectangle[] = []
 
@@ -69,6 +81,8 @@ export function PackStrategy({
     return splitter.split(rectangle, item).filter(r => r.width > 0 && r.height > 0)
   }
 
+  const packedItems: PackedItem[] = []
+
   const getSelectionOption = (item: Item) => {
     const rectangle = selector.select(freeRectangles, item)
     debug(`for item ${JSON.stringify(item)}, selected ${JSON.stringify(rectangle)}`)
@@ -83,23 +97,61 @@ export function PackStrategy({
     }
   }
 
+  const performStackAddition = (item: Item, binId: number): boolean | null => {
+    // IF THE item HAVE ALREADY BEEN ADDED TO THE packedItems
+    const currentBinWeight = packedItems
+      .filter(e => e.bin === binId)
+      .reduce((acc, cur) => (acc += cur.weight), 0)
+    const itemDetail = itemConfig.find(e => e.name === item.name)
+
+    let added = false
+    if (itemDetail) {
+      packedItems.forEach((e, index) => {
+        console.log('e.count1: ', e.count)
+        if (e.name === item.name && e.bin == binId) {
+          // CHECK IF THE loadCount OF THE item HAS BEEN EXCEEDED THE maxCount
+          let count = e.count || 0
+          if (count + 1 <= (itemDetail?.maxCount || 0)) {
+            // CHECK IF THE WEIGHT AFTER ADDING EXCEEDS THE binWeight
+            if (currentBinWeight + (itemDetail?.weight || 0) <= (bin.binWeightLimit || 0)) {
+              e.count += 1
+              e.weight += itemDetail.weight
+              added = true
+            }
+          }
+        }
+        console.log('e.count2: ', e.count)
+        return e
+      })
+    }
+    return added
+  }
+
   const selectRectangleOption = (item: Item) => {
-    const originalOption = getSelectionOption(item)
+    const targetItemConfig = itemConfig.find(e => e.name === item.name)
+    const itemWithWidthAndHeight = {
+      ...item,
+      width: targetItemConfig?.width,
+      height: targetItemConfig?.height
+    }
+    const originalOption = getSelectionOption(itemWithWidthAndHeight)
     let rotatedOption = null
     let rotatedItem
     if (allowRotation) {
-      rotatedItem = rotateItem(item)
+      rotatedItem = rotateItem(itemWithWidthAndHeight)
       rotatedOption = getSelectionOption(rotatedItem)
     }
+
     if (originalOption === null && rotatedOption === null) {
+      // IF NOT ENOUGH SPACE TO PLACE THE ITEM EVEN AFTER ROTATION, RETURN NULL
       debug(`No free rectangles found for`, item)
       return null
     } else if (originalOption === null) {
       debug(`Original item didn't fit, using rotated`, item)
-      return rotatedOption
+      return rotatedOption // GUARANTEED TO HAVE VALUE
     } else if (rotatedOption === null) {
       debug(`Rotated item didn't fit, using original option`, item)
-      return originalOption
+      return originalOption // GUARANTEED TO HAVE VALUE
     } else {
       const getBiggestSplitRectangle = ({ splitRectangles }: { splitRectangles: Rectangle[] }) =>
         Math.max(...splitRectangles.map(split => split.height * split.width))
@@ -116,26 +168,45 @@ export function PackStrategy({
     }
   }
 
-  const packedItems = sortedItems
-    .map((item, idx) => {
-      debug('packing item', item)
+  sortedItems.map((item, idx) => {
+    debug('packing item', item)
+
+    const loop = allowWeightLimitSplit ? item.count || 1 : 1
+    const targetItemConfig = itemConfig.find(e => e.name === item.name)
+    for (let i = 0; i < loop; i++) {
+      if (allowWeightLimitSplit) {
+        const couldAddToStack = performStackAddition(item, binCount)
+        if (couldAddToStack) {
+          continue
+        }
+      }
+
       let selectedOption = selectRectangleOption(item)
       if (!selectedOption) {
+        // IF CANNOT PLACE THE ITEM, CREATE A NEW BIN
         createBin()
         selectedOption = selectRectangleOption(item)
       }
       if (!selectedOption) {
         throw new Error(
-          `item at index ${idx} with dimensions ${item.width}x${item.height} exceeds bin dimensions of ${binWidth}x${binHeight}`
+          `item at index ${idx} with dimensions ${targetItemConfig?.width}x${targetItemConfig?.height} exceeds bin dimensions of ${binWidth}x${binHeight}`
         )
       }
       const { rectangle, splitRectangles } = selectedOption
+      if (!targetItemConfig) {
+        throw new Error(`item ${item.name}'s config is not found`)
+      }
       debug('selected rectangle', rectangle)
-      const { width, height, ...otherItemProps } = selectedOption.item
+      const { count, name, width, height, ...otherItemProps } = selectedOption.item
       const packedItem = {
-        item: otherItemProps,
+        otherDetail: {
+          ...otherItemProps
+        },
+        name,
         width,
         height,
+        count: 1,
+        weight: 1 * (targetItemConfig?.weight || 0),
         x: rectangle.x,
         y: rectangle.y,
         bin: rectangle.bin
@@ -145,21 +216,23 @@ export function PackStrategy({
       const rectIndex = freeRectangles.findIndex(r => r === rectangle)
       freeRectangles.splice(rectIndex, 1, ...splitRectangles)
       debug('free rectangles post split', freeRectangles)
-      return packedItem
-    })
-    .reduce((bins, item) => {
-      if (bins.length >= item.bin) {
-        bins[item.bin - 1].push(item)
-      } else {
-        bins.push([item])
-      }
-      return bins
-    }, [] as PackedItem[][])
+      packedItems.push(packedItem)
+    }
+  })
+
+  const organizedPackedItems = packedItems.reduce((bins, item) => {
+    if (bins.length >= item.bin) {
+      bins[item.bin - 1].push(item)
+    } else {
+      bins.push([item])
+    }
+    return bins
+  }, [] as PackedItem[][])
 
   return {
     sortStrategy,
     sortOrder,
-    packedItems,
+    packedItems: organizedPackedItems,
     splitStrategy,
     selectionStrategy
   }

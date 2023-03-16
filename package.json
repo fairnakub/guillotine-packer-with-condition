@@ -1,5 +1,5 @@
 {
-  "name": "guillotine-packer",
+  "name": "guillotine-packer-with-weight-and-max-stack-count",
   "version": "0.0.0-development",
   "description": "Guillotine based packing algorithm",
   "keywords": [
