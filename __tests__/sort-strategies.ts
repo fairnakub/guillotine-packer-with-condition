@@ -1,4 +1,5 @@
 import { GetSortImplementation, SortDirection, SortStrategy } from '../src/sort-strategies'
+import { Item } from '../src/types'
 
 test('area sort', () => {
   const testItems = [
@@ -9,7 +10,7 @@ test('area sort', () => {
     { width: 10, height: 50 }
   ]
   const sorter = GetSortImplementation(SortStrategy.Area, SortDirection.ASC)
-  const items = sorter.sort(testItems)
+  const items = sorter.sort((testItems as any) as Item[])
 
   expect(items).toMatchInlineSnapshot(`
 Array [
@@ -45,7 +46,7 @@ test('area sort DESC', () => {
     { width: 10, height: 50 }
   ]
   const sorter = GetSortImplementation(SortStrategy.Area, SortDirection.DESC)
-  const items = sorter.sort(testItems)
+  const items = sorter.sort((testItems as any) as Item[])
 
   expect(items).toMatchInlineSnapshot(`
 Array [
@@ -82,7 +83,7 @@ test('differences sort', () => {
     { width: 10, height: 50 }
   ]
   const sorter = GetSortImplementation(SortStrategy.Differences, SortDirection.ASC)
-  const items = sorter.sort(testItems)
+  const items = sorter.sort((testItems as any) as Item[])
 
   expect(items).toMatchInlineSnapshot(`
 Array [
@@ -121,7 +122,7 @@ test('long side sort', () => {
     { width: 5, height: 50 }
   ]
   const sorter = GetSortImplementation(SortStrategy.LongSide, SortDirection.ASC)
-  const items = sorter.sort(testItems)
+  const items = sorter.sort((testItems as any) as Item[])
 
   expect(items).toMatchInlineSnapshot(`
 Array [
@@ -170,7 +171,7 @@ test('short side sort', () => {
     { width: 10, height: 6 }
   ]
   const sorter = GetSortImplementation(SortStrategy.ShortSide, SortDirection.ASC)
-  const items = sorter.sort(testItems)
+  const items = sorter.sort((testItems as any) as Item[])
 
   expect(items).toMatchInlineSnapshot(`
 Array [
@@ -222,7 +223,7 @@ test('ratio sort', () => {
     { width: 10, height: 30 }
   ]
   const sorter = GetSortImplementation(SortStrategy.Ratio, SortDirection.ASC)
-  const items = sorter.sort(testItems)
+  const items = sorter.sort((testItems as any) as Item[])
 
   expect(items).toMatchInlineSnapshot(`
 Array [
@@ -254,7 +255,7 @@ test('perimeter sort', () => {
   ]
 
   const sorter = GetSortImplementation(SortStrategy.Perimeter, SortDirection.ASC)
-  const items = sorter.sort(testItems)
+  const items = sorter.sort((testItems as any) as Item[])
 
   expect(items).toMatchInlineSnapshot(`
 Array [

@@ -13,6 +13,11 @@ export interface Item {
   count: number
   [others: string]: any
 }
+export interface ItemWithOnlyWithAndHeight extends Partial<Item> {
+  width: number
+  height: number
+  [others: string]: any
+}
 export interface OtherItemDetail {
   [others: string]: any
 }
