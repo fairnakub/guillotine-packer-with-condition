@@ -6,6 +6,7 @@ export type Rectangle = {
   bin: number
   id: string
   splitFrom?: string
+  disabled?: boolean
 }
 
 export interface Item {

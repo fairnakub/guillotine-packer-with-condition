@@ -64,7 +64,8 @@ export function PackStrategy({
       x: 0,
       y: 0,
       bin: binCount,
-      id: 'root'
+      id: 'root',
+      disabled: false
     })
   }
   const splitter = GetSplitImplementation(splitStrategy, kerfSize)
@@ -104,26 +105,27 @@ export function PackStrategy({
       .reduce((acc, cur) => (acc += cur.weight), 0)
     const itemDetail = itemConfig.find(e => e.name === item.name)
 
-    let result = null
+    let result: StackAdditionResult | null = null
     if (itemDetail) {
       packedItems.forEach((e, index) => {
-        if (e.name === item.name && e.bin === binId) {
-          // CHECK IF THE loadCount OF THE item HAS BEEN EXCEEDED THE maxCount
-          let count = e.count || 0
-          if (currentBinWeight + (itemDetail?.weight || 0) <= (bin.binWeightLimit || 0)) {
-            // CHECK IF THE WEIGHT AFTER ADDING EXCEEDS THE binWeight
-            if (count + 1 <= (itemDetail?.maxCount || 0)) {
-              e.count += 1
-              e.weight += itemDetail.weight
-              result = StackAdditionResult.StackUpdated
+        if (!result) {
+          if (e.name === item.name && e.bin === binId) {
+            // CHECK IF THE loadCount OF THE item HAS BEEN EXCEEDED THE maxCount
+            let count = e.count || 0
+            if (currentBinWeight + (itemDetail?.weight || 0) <= (bin.binWeightLimit || 0)) {
+              // CHECK IF THE WEIGHT AFTER ADDING EXCEEDS THE binWeight
+              if (count + 1 <= (itemDetail?.maxCount || 0)) {
+                e.count += 1
+                e.weight += itemDetail.weight
+                result = StackAdditionResult.StackUpdated
+              } else {
+                result = StackAdditionResult.CountExceeded
+              }
             } else {
-              result = StackAdditionResult.CountExceeded
+              result = StackAdditionResult.Overweight
             }
-          } else {
-            result = StackAdditionResult.Overweight
           }
         }
-        return e
       })
     }
     return result
@@ -175,7 +177,7 @@ export function PackStrategy({
 
     const loop = allowWeightLimitSplit ? item.count || 1 : 1
     const targetItemConfig = itemConfig.find(e => e.name === item.name)
-    for (let i = 0; i < loop; i++) {
+    for (let i = 0; i < loop; i += 1) {
       let stackAdditionResult = null
       if (allowWeightLimitSplit) {
         stackAdditionResult = performStackAddition(item, binCount)
@@ -188,11 +190,24 @@ export function PackStrategy({
         }
       }
 
-      let selectedOption =
-        stackAdditionResult === StackAdditionResult.Overweight ? null : selectRectangleOption(item)
+      let selectedOption
+
+      if (stackAdditionResult === StackAdditionResult.Overweight) {
+        selectedOption = null
+        freeRectangles.forEach(fr => {
+          if (fr.bin === binCount) {
+            fr.disabled = true
+          }
+        })
+      } else {
+        selectedOption = selectRectangleOption(item)
+      }
+
       if (!selectedOption) {
         // IF CANNOT PLACE THE ITEM, CREATE A NEW BIN
+
         createBin()
+
         selectedOption = selectRectangleOption(item)
       }
       if (!selectedOption) {

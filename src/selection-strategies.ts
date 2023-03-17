@@ -12,7 +12,9 @@ abstract class SelectionImplementation {
     const [bestRect] = freeRectangles
       .filter(
         freeRect =>
-          freeRect.width - itemToPlace.width >= 0 && freeRect.height - itemToPlace.height >= 0
+          freeRect.width - itemToPlace.width >= 0 &&
+          freeRect.height - itemToPlace.height >= 0 &&
+          !freeRect.disabled
       )
       .map(r => ({ rectangle: r, sortValue: this.generateSortValue(r, itemToPlace) }))
       .sort((a, b) => (a.sortValue > b.sortValue ? 1 : -1))

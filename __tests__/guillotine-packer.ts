@@ -327,14 +327,11 @@ test('throw error if item too large for bin', () => {
 })
 
 test('pack multiple bins with weightLimit', () => {
+  console.log('pack multiple bins with weightLimit')
   const items = [
     {
       name: '1',
-      count: 4
-    },
-    {
-      name: '2',
-      count: 2
+      count: 7
     }
   ]
   const itemConfig = [
@@ -357,7 +354,7 @@ test('pack multiple bins with weightLimit', () => {
   const bin = {
     binHeight: 4,
     binWidth: 8,
-    binWeightLimit: 6
+    binWeightLimit: 8
   }
 
   const result = packer(
@@ -391,33 +388,9 @@ Array [
     },
     Object {
       "bin": 1,
-      "count": 1,
+      "count": 2,
       "height": 4,
       "name": "1",
-      "otherDetail": Object {},
-      "weight": 2,
-      "width": 3,
-      "x": 3,
-      "y": 0,
-    },
-  ],
-  Array [
-    Object {
-      "bin": 2,
-      "count": 1,
-      "height": 4,
-      "name": "1",
-      "otherDetail": Object {},
-      "weight": 2,
-      "width": 3,
-      "x": 0,
-      "y": 0,
-    },
-    Object {
-      "bin": 2,
-      "count": 1,
-      "height": 4,
-      "name": "2",
       "otherDetail": Object {},
       "weight": 4,
       "width": 3,
@@ -427,14 +400,25 @@ Array [
   ],
   Array [
     Object {
-      "bin": 3,
-      "count": 1,
+      "bin": 2,
+      "count": 2,
       "height": 4,
-      "name": "2",
+      "name": "1",
       "otherDetail": Object {},
       "weight": 4,
       "width": 3,
       "x": 0,
+      "y": 0,
+    },
+    Object {
+      "bin": 2,
+      "count": 1,
+      "height": 4,
+      "name": "1",
+      "otherDetail": Object {},
+      "weight": 2,
+      "width": 3,
+      "x": 3,
       "y": 0,
     },
   ],
