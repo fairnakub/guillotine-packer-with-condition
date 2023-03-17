@@ -104,6 +104,7 @@ export function PackStrategy({
         const arr = acc.map(e => {
           if (e.binId === cur.bin) {
             e.currentBinWeight += cur.weight
+            e.remainingBinWeight -= cur.weight
           }
           return e
         })
@@ -118,13 +119,9 @@ export function PackStrategy({
   }
 
   const getSelectionOption = (item: Item) => {
-    console.log('getAllBinWeights: ')
-    console.log(getAllBinWeights())
     const targetItemConfig = itemConfig.find(q => q.name === item.name)
     if (!targetItemConfig) throw new Error(`item config for ${item.name} not found`)
     const rectangle = selector.select(freeRectangles, item, targetItemConfig, getAllBinWeights())
-    console.log('rectangle')
-    console.log(rectangle)
     debug(`for item ${JSON.stringify(item)}, selected ${JSON.stringify(rectangle)}`)
     if (!rectangle) {
       return null
@@ -215,7 +212,7 @@ export function PackStrategy({
     debug('packing item', item)
 
     const targetItemConfig = itemConfig.find(e => e.name === item.name)
-    for (let i = 0; i < item.count || 1; i += 1) {
+    for (let i = 0; i < (item.count || 1); i += 1) {
       const stackAdditionResult = performStackAddition(item, binCount)
       if (stackAdditionResult === StackAdditionResult.StackUpdated) {
         continue
@@ -268,8 +265,6 @@ export function PackStrategy({
       freeRectangles.splice(rectIndex, 1, ...splitRectangles)
       debug('free rectangles post split', freeRectangles)
       packedItems.push(packedItem)
-      console.log('pushed')
-      console.log(packedItem)
     }
   })
 
