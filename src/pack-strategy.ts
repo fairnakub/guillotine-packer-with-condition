@@ -121,7 +121,12 @@ export function PackStrategy({
   const getSelectionOption = (item: Item) => {
     const targetItemConfig = itemConfig.find(q => q.name === item.name)
     if (!targetItemConfig) throw new Error(`item config for ${item.name} not found`)
-    const rectangle = selector.select(freeRectangles, item, targetItemConfig, getAllBinWeights())
+    const rectangle = selector.select(
+      freeRectangles,
+      item,
+      targetItemConfig,
+      allowWeightLimitSplit ? getAllBinWeights() : []
+    )
     debug(`for item ${JSON.stringify(item)}, selected ${JSON.stringify(rectangle)}`)
     if (!rectangle) {
       return null
