@@ -181,16 +181,13 @@ export function PackStrategy({
 
     const targetItemConfig = itemConfig.find(e => e.name === item.name)
     for (let i = 0; i < item.count || 1; i += 1) {
-      let stackAdditionResult = null
-      if (allowWeightLimitSplit) {
-        stackAdditionResult = performStackAddition(item, binCount)
-        if (stackAdditionResult === StackAdditionResult.StackUpdated) {
-          continue
-        }
+      const stackAdditionResult = performStackAddition(item, binCount)
+      if (stackAdditionResult === StackAdditionResult.StackUpdated) {
+        continue
+      }
 
-        if (stackAdditionResult === StackAdditionResult.CountExceeded) {
-          // do nothing
-        }
+      if (stackAdditionResult === StackAdditionResult.CountExceeded) {
+        // do nothing
       }
 
       let selectedOption
