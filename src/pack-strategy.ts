@@ -1,6 +1,13 @@
 import debugLib from 'debug'
 const debug = debugLib('guillotine-packer:pack-strategy')
-import { Rectangle, Item, ItemConfig, OtherItemDetail, StackAdditionResult } from './types'
+import {
+  Rectangle,
+  Item,
+  ItemConfig,
+  OtherItemDetail,
+  StackAdditionResult,
+  BinWeightDetail
+} from './types'
 import { SelectionStrategy, GetSelectionImplementation } from './selection-strategies'
 import { SortDirection, SortStrategy, GetSortImplementation } from './sort-strategies'
 import { SplitStrategy, GetSplitImplementation } from './split-strategies'
@@ -51,7 +58,7 @@ export function PackStrategy({
   debug(
     `Executing! split strategy: ${splitStrategy}, selection strategy: ${selectionStrategy}, sortStrategy: ${sortStrategy}, sortOrder: ${sortOrder}`
   )
-  const { binWidth, binHeight, binWeightLimit } = bin
+  const { binWidth, binHeight, binWeightLimit = Infinity } = bin
   let binCount = 0
   const freeRectangles: Rectangle[] = []
 
@@ -64,8 +71,7 @@ export function PackStrategy({
       x: 0,
       y: 0,
       bin: binCount,
-      id: 'root',
-      disabled: false
+      id: 'root'
     })
   }
   const splitter = GetSplitImplementation(splitStrategy, kerfSize)
@@ -84,8 +90,41 @@ export function PackStrategy({
 
   const packedItems: PackedItem[] = []
 
+  const getAllBinWeights = () => {
+    return packedItems.reduce((acc, cur) => {
+      const found = acc.find(a => a.binId === cur.bin)
+      if (!found) {
+        acc.push({
+          binId: cur.bin,
+          weightLimit: binWeightLimit ?? Infinity,
+          currentBinWeight: cur.weight,
+          remainingBinWeight: binWeightLimit - cur.weight
+        })
+      } else {
+        const arr = acc.map(e => {
+          if (e.binId === cur.bin) {
+            e.currentBinWeight += cur.weight
+          }
+          return e
+        })
+        return arr
+      }
+      return acc
+    }, [] as BinWeightDetail[])
+  }
+
+  const getCurrentBinWeight = (binId: number) => {
+    return packedItems.filter(e => e.bin === binId).reduce((acc, cur) => (acc += cur.weight), 0)
+  }
+
   const getSelectionOption = (item: Item) => {
-    const rectangle = selector.select(freeRectangles, item)
+    console.log('getAllBinWeights: ')
+    console.log(getAllBinWeights())
+    const targetItemConfig = itemConfig.find(q => q.name === item.name)
+    if (!targetItemConfig) throw new Error(`item config for ${item.name} not found`)
+    const rectangle = selector.select(freeRectangles, item, targetItemConfig, getAllBinWeights())
+    console.log('rectangle')
+    console.log(rectangle)
     debug(`for item ${JSON.stringify(item)}, selected ${JSON.stringify(rectangle)}`)
     if (!rectangle) {
       return null
@@ -100,24 +139,20 @@ export function PackStrategy({
 
   const performStackAddition = (item: Item, binId: number): StackAdditionResult | null => {
     // IF THE item HAVE ALREADY BEEN ADDED TO THE packedItems
-    const currentBinWeight = packedItems
-      .filter(e => e.bin === binId)
-      .reduce((acc, cur) => (acc += cur.weight), 0)
     const itemDetail = itemConfig.find(e => e.name === item.name)
-
     let result: StackAdditionResult | null = null
     if (itemDetail) {
       packedItems.forEach((e, index) => {
         if (!result) {
           if (e.name === item.name && e.bin === binId) {
-            // CHECK IF THE loadCount OF THE item HAS BEEN EXCEEDED THE maxCount
+            // CHECK IF THE WEIGHT AFTER ADDING EXCEEDS THE binWeight
             let count = e.count || 0
             if (
               (allowWeightLimitSplit &&
-                currentBinWeight + (itemDetail?.weight || 0) <= (bin.binWeightLimit || 0)) ||
+                getCurrentBinWeight(binId) + (itemDetail?.weight || 0) <= binWeightLimit) ||
               !allowWeightLimitSplit
             ) {
-              // CHECK IF THE WEIGHT AFTER ADDING EXCEEDS THE binWeight
+              // CHECK IF THE loadCount OF THE item HAS EXCEEDED THE maxCount
               if (count + 1 <= (itemDetail?.maxCount || 0)) {
                 e.count += 1
                 e.weight += itemDetail.weight
@@ -194,20 +229,13 @@ export function PackStrategy({
 
       if (stackAdditionResult === StackAdditionResult.Overweight) {
         selectedOption = null
-        freeRectangles.forEach(fr => {
-          if (fr.bin === binCount) {
-            fr.disabled = true
-          }
-        })
       } else {
         selectedOption = selectRectangleOption(item)
       }
 
       if (!selectedOption) {
         // IF CANNOT PLACE THE ITEM, CREATE A NEW BIN
-
         createBin()
-
         selectedOption = selectRectangleOption(item)
       }
       if (!selectedOption) {
@@ -240,6 +268,8 @@ export function PackStrategy({
       freeRectangles.splice(rectIndex, 1, ...splitRectangles)
       debug('free rectangles post split', freeRectangles)
       packedItems.push(packedItem)
+      console.log('pushed')
+      console.log(packedItem)
     }
   })
 

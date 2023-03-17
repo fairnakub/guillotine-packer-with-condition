@@ -27,11 +27,89 @@ Array [
   Array [
     Object {
       "bin": 1,
-      "count": 1,
+      "count": 3,
       "height": 30,
       "name": "test",
       "otherDetail": Object {},
-      "weight": 10,
+      "weight": 30,
+      "width": 40,
+      "x": 0,
+      "y": 0,
+    },
+  ],
+  Array [
+    Object {
+      "bin": 2,
+      "count": 3,
+      "height": 30,
+      "name": "test",
+      "otherDetail": Object {},
+      "weight": 30,
+      "width": 40,
+      "x": 0,
+      "y": 0,
+    },
+  ],
+  Array [
+    Object {
+      "bin": 3,
+      "count": 3,
+      "height": 30,
+      "name": "test",
+      "otherDetail": Object {},
+      "weight": 30,
+      "width": 40,
+      "x": 0,
+      "y": 0,
+    },
+  ],
+  Array [
+    Object {
+      "bin": 4,
+      "count": 3,
+      "height": 30,
+      "name": "test",
+      "otherDetail": Object {},
+      "weight": 30,
+      "width": 40,
+      "x": 0,
+      "y": 0,
+    },
+  ],
+  Array [
+    Object {
+      "bin": 5,
+      "count": 3,
+      "height": 30,
+      "name": "test",
+      "otherDetail": Object {},
+      "weight": 30,
+      "width": 40,
+      "x": 0,
+      "y": 0,
+    },
+  ],
+  Array [
+    Object {
+      "bin": 6,
+      "count": 3,
+      "height": 30,
+      "name": "test",
+      "otherDetail": Object {},
+      "weight": 30,
+      "width": 40,
+      "x": 0,
+      "y": 0,
+    },
+  ],
+  Array [
+    Object {
+      "bin": 7,
+      "count": 2,
+      "height": 30,
+      "name": "test",
+      "otherDetail": Object {},
+      "weight": 20,
       "width": 40,
       "x": 0,
       "y": 0,
@@ -338,7 +416,18 @@ test('pack multiple bins with weightLimit', () => {
       itemCountPerLoad: 80,
       maxCount: 2,
       representedColor: '#AADDAE',
-      count: 6
+      count: 2
+    },
+    {
+      name: 'เสารั้ว หน้า 4" x 150',
+      weight: 80,
+      width: 50,
+      height: 150,
+      price: 67.5,
+      itemCountPerLoad: 80,
+      maxCount: 2,
+      representedColor: '#AADDAE',
+      count: 2
     }
   ]
   const itemConfig = [
@@ -365,13 +454,23 @@ test('pack multiple bins with weightLimit', () => {
       itemCountPerLoad: 80,
       maxCount: 2,
       representedColor: '#AADDAE'
+    },
+    {
+      name: 'เสารั้ว หน้า 4" x 150',
+      weight: 50, // TODO
+      width: 80,
+      height: 150,
+      price: 45 * 1.5,
+      itemCountPerLoad: 80,
+      maxCount: 2,
+      representedColor: '#AADDAE'
     }
   ]
 
   const bin = {
     binHeight: 500,
     binWidth: 240,
-    binWeightLimit: 320
+    binWeightLimit: 200
   }
 
   const result = packer(
@@ -395,8 +494,8 @@ Array [
     Object {
       "bin": 1,
       "count": 2,
-      "height": 90,
-      "name": "เสารั้ว หน้า 3\\" x 150",
+      "height": 80,
+      "name": "เสารั้ว หน้า 4\\" x 150",
       "otherDetail": Object {
         "itemCountPerLoad": 80,
         "maxCount": 2,
@@ -404,14 +503,14 @@ Array [
         "representedColor": "#AADDAE",
         "weight": 80,
       },
-      "weight": 160,
+      "weight": 100,
       "width": 150,
       "x": 0,
       "y": 0,
     },
     Object {
       "bin": 1,
-      "count": 2,
+      "count": 1,
       "height": 90,
       "name": "เสารั้ว หน้า 3\\" x 150",
       "otherDetail": Object {
@@ -421,16 +520,14 @@ Array [
         "representedColor": "#AADDAE",
         "weight": 80,
       },
-      "weight": 160,
+      "weight": 80,
       "width": 150,
       "x": 0,
-      "y": 90,
+      "y": 80,
     },
-  ],
-  Array [
     Object {
-      "bin": 2,
-      "count": 2,
+      "bin": 1,
+      "count": 1,
       "height": 90,
       "name": "เสารั้ว หน้า 3\\" x 150",
       "otherDetail": Object {
@@ -440,10 +537,10 @@ Array [
         "representedColor": "#AADDAE",
         "weight": 80,
       },
-      "weight": 160,
+      "weight": 80,
       "width": 150,
       "x": 0,
-      "y": 0,
+      "y": 170,
     },
   ],
 ]

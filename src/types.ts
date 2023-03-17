@@ -36,3 +36,10 @@ export enum StackAdditionResult {
   Overweight,
   StackUpdated
 }
+
+export interface BinWeightDetail {
+  binId: number
+  weightLimit: number
+  currentBinWeight: number
+  remainingBinWeight: number
+}
