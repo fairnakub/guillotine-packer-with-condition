@@ -112,7 +112,11 @@ export function PackStrategy({
           if (e.name === item.name && e.bin === binId) {
             // CHECK IF THE loadCount OF THE item HAS BEEN EXCEEDED THE maxCount
             let count = e.count || 0
-            if (currentBinWeight + (itemDetail?.weight || 0) <= (bin.binWeightLimit || 0)) {
+            if (
+              (allowWeightLimitSplit &&
+                currentBinWeight + (itemDetail?.weight || 0) <= (bin.binWeightLimit || 0)) ||
+              !allowWeightLimitSplit
+            ) {
               // CHECK IF THE WEIGHT AFTER ADDING EXCEEDS THE binWeight
               if (count + 1 <= (itemDetail?.maxCount || 0)) {
                 e.count += 1
@@ -175,9 +179,8 @@ export function PackStrategy({
   sortedItems.map((item, idx) => {
     debug('packing item', item)
 
-    const loop = allowWeightLimitSplit ? item.count || 1 : 1
     const targetItemConfig = itemConfig.find(e => e.name === item.name)
-    for (let i = 0; i < loop; i += 1) {
+    for (let i = 0; i < item.count || 1; i += 1) {
       let stackAdditionResult = null
       if (allowWeightLimitSplit) {
         stackAdditionResult = performStackAddition(item, binCount)

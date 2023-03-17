@@ -330,8 +330,15 @@ test('pack multiple bins with weightLimit', () => {
   console.log('pack multiple bins with weightLimit')
   const items = [
     {
-      name: '1',
-      count: 7
+      name: 'เสารั้ว หน้า 3" x 150',
+      weight: 80,
+      width: 90,
+      height: 150,
+      price: 67.5,
+      itemCountPerLoad: 80,
+      maxCount: 2,
+      representedColor: '#AADDAE',
+      count: 6
     }
   ]
   const itemConfig = [
@@ -348,13 +355,23 @@ test('pack multiple bins with weightLimit', () => {
       height: 3,
       weight: 4,
       maxCount: 3
+    },
+    {
+      name: 'เสารั้ว หน้า 3" x 150',
+      weight: 80, // TODO
+      width: 90,
+      height: 150,
+      price: 45 * 1.5,
+      itemCountPerLoad: 80,
+      maxCount: 2,
+      representedColor: '#AADDAE'
     }
   ]
 
   const bin = {
-    binHeight: 4,
-    binWidth: 8,
-    binWeightLimit: 8
+    binHeight: 500,
+    binWidth: 240,
+    binWeightLimit: 320
   }
 
   const result = packer(
@@ -378,47 +395,54 @@ Array [
     Object {
       "bin": 1,
       "count": 2,
-      "height": 4,
-      "name": "1",
-      "otherDetail": Object {},
-      "weight": 4,
-      "width": 3,
+      "height": 90,
+      "name": "เสารั้ว หน้า 3\\" x 150",
+      "otherDetail": Object {
+        "itemCountPerLoad": 80,
+        "maxCount": 2,
+        "price": 67.5,
+        "representedColor": "#AADDAE",
+        "weight": 80,
+      },
+      "weight": 160,
+      "width": 150,
       "x": 0,
       "y": 0,
     },
     Object {
       "bin": 1,
       "count": 2,
-      "height": 4,
-      "name": "1",
-      "otherDetail": Object {},
-      "weight": 4,
-      "width": 3,
-      "x": 3,
-      "y": 0,
+      "height": 90,
+      "name": "เสารั้ว หน้า 3\\" x 150",
+      "otherDetail": Object {
+        "itemCountPerLoad": 80,
+        "maxCount": 2,
+        "price": 67.5,
+        "representedColor": "#AADDAE",
+        "weight": 80,
+      },
+      "weight": 160,
+      "width": 150,
+      "x": 0,
+      "y": 90,
     },
   ],
   Array [
     Object {
       "bin": 2,
       "count": 2,
-      "height": 4,
-      "name": "1",
-      "otherDetail": Object {},
-      "weight": 4,
-      "width": 3,
+      "height": 90,
+      "name": "เสารั้ว หน้า 3\\" x 150",
+      "otherDetail": Object {
+        "itemCountPerLoad": 80,
+        "maxCount": 2,
+        "price": 67.5,
+        "representedColor": "#AADDAE",
+        "weight": 80,
+      },
+      "weight": 160,
+      "width": 150,
       "x": 0,
-      "y": 0,
-    },
-    Object {
-      "bin": 2,
-      "count": 1,
-      "height": 4,
-      "name": "1",
-      "otherDetail": Object {},
-      "weight": 2,
-      "width": 3,
-      "x": 3,
       "y": 0,
     },
   ],
