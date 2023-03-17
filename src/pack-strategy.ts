@@ -1,6 +1,6 @@
 import debugLib from 'debug'
 const debug = debugLib('guillotine-packer:pack-strategy')
-import { Rectangle, Item, ItemConfig, OtherItemDetail } from './types'
+import { Rectangle, Item, ItemConfig, OtherItemDetail, StackAdditionResult } from './types'
 import { SelectionStrategy, GetSelectionImplementation } from './selection-strategies'
 import { SortDirection, SortStrategy, GetSortImplementation } from './sort-strategies'
 import { SplitStrategy, GetSplitImplementation } from './split-strategies'
@@ -97,14 +97,14 @@ export function PackStrategy({
     }
   }
 
-  const performStackAddition = (item: Item, binId: number): boolean | null => {
+  const performStackAddition = (item: Item, binId: number): StackAdditionResult | null => {
     // IF THE item HAVE ALREADY BEEN ADDED TO THE packedItems
     const currentBinWeight = packedItems
       .filter(e => e.bin === binId)
       .reduce((acc, cur) => (acc += cur.weight), 0)
     const itemDetail = itemConfig.find(e => e.name === item.name)
 
-    let added = false
+    let result = null
     if (itemDetail) {
       packedItems.forEach((e, index) => {
         if (e.name === item.name && e.bin === binId) {
@@ -115,14 +115,18 @@ export function PackStrategy({
             if (currentBinWeight + (itemDetail?.weight || 0) <= (bin.binWeightLimit || 0)) {
               e.count += 1
               e.weight += itemDetail.weight
-              added = true
+              result = StackAdditionResult.StackUpdated
+            } else {
+              result = StackAdditionResult.Overweight
             }
+          } else {
+            result = StackAdditionResult.CountExceeded
           }
         }
         return e
       })
     }
-    return added
+    return result
   }
 
   const selectRectangleOption = (item: Item) => {
@@ -172,14 +176,20 @@ export function PackStrategy({
     const loop = allowWeightLimitSplit ? item.count || 1 : 1
     const targetItemConfig = itemConfig.find(e => e.name === item.name)
     for (let i = 0; i < loop; i++) {
+      let stackAdditionResult = null
       if (allowWeightLimitSplit) {
-        const couldAddToStack = performStackAddition(item, binCount)
-        if (couldAddToStack) {
+        stackAdditionResult = performStackAddition(item, binCount)
+        if (stackAdditionResult === StackAdditionResult.StackUpdated) {
           continue
+        }
+
+        if (stackAdditionResult === StackAdditionResult.CountExceeded) {
+          // do nothing
         }
       }
 
-      let selectedOption = selectRectangleOption(item)
+      let selectedOption =
+        stackAdditionResult === StackAdditionResult.Overweight ? null : selectRectangleOption(item)
       if (!selectedOption) {
         // IF CANNOT PLACE THE ITEM, CREATE A NEW BIN
         createBin()

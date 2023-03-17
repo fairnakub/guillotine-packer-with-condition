@@ -29,3 +29,9 @@ export interface ItemConfig {
   weight: number
   maxCount: number
 }
+
+export enum StackAdditionResult {
+  CountExceeded,
+  Overweight,
+  StackUpdated
+}
