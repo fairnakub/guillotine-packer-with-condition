@@ -110,17 +110,17 @@ export function PackStrategy({
         if (e.name === item.name && e.bin === binId) {
           // CHECK IF THE loadCount OF THE item HAS BEEN EXCEEDED THE maxCount
           let count = e.count || 0
-          if (count + 1 <= (itemDetail?.maxCount || 0)) {
+          if (currentBinWeight + (itemDetail?.weight || 0) <= (bin.binWeightLimit || 0)) {
             // CHECK IF THE WEIGHT AFTER ADDING EXCEEDS THE binWeight
-            if (currentBinWeight + (itemDetail?.weight || 0) <= (bin.binWeightLimit || 0)) {
+            if (count + 1 <= (itemDetail?.maxCount || 0)) {
               e.count += 1
               e.weight += itemDetail.weight
               result = StackAdditionResult.StackUpdated
             } else {
-              result = StackAdditionResult.Overweight
+              result = StackAdditionResult.CountExceeded
             }
           } else {
-            result = StackAdditionResult.CountExceeded
+            result = StackAdditionResult.Overweight
           }
         }
         return e
